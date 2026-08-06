@@ -1,12 +1,88 @@
-const apiUrl = process.env.CODESPACE_NAME
-  ? `https://${process.env.CODESPACE_NAME}-8000.app.github.dev/api/activities`
-  : 'http://localhost:8000/api/activities';
+import { useEffect, useMemo, useState } from 'react'
+
+function getApiUrl(path) {
+  const codespaceName = import.meta.env.VITE_CODESPACE_NAME?.trim()
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+
+  if (codespaceName) {
+    return `https://${codespaceName}-8000.app.github.dev/api${normalizedPath}`
+  }
+
+  return `http://localhost:8000/api${normalizedPath}`
+}
+
+function normalizeItems(payload) {
+  if (Array.isArray(payload)) {
+    return payload
+  }
+
+  if (payload && Array.isArray(payload.items)) {
+    return payload.items
+  }
+
+  if (payload && Array.isArray(payload.results)) {
+    return payload.results
+  }
+
+  if (payload && Array.isArray(payload.data)) {
+    return payload.data
+  }
+
+  return payload ? [payload] : []
+}
 
 export default function Activities() {
+  const [items, setItems] = useState([])
+  const [error, setError] = useState('')
+  const apiUrl = useMemo(() => getApiUrl('/activities'), [])
+
+  useEffect(() => {
+    let isMounted = true
+
+    fetch(apiUrl)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`)
+        }
+
+        return response.json()
+      })
+      .then((payload) => {
+        if (isMounted) {
+          setItems(normalizeItems(payload))
+          setError('')
+        }
+      })
+      .catch((fetchError) => {
+        if (isMounted) {
+          setError(fetchError.message)
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [apiUrl])
+
   return (
-    <section>
+    <section className="card">
       <h2>Activities</h2>
-      <p>API endpoint: {apiUrl}</p>
+      <p className="text-muted">API endpoint: {apiUrl}</p>
+      {error ? (
+        <p className="text-danger">Unable to load activities: {error}</p>
+      ) : (
+        <ul className="list-group mt-3">
+          {items.length === 0 ? (
+            <li className="list-group-item">No activity entries yet.</li>
+          ) : (
+            items.map((item, index) => (
+              <li key={item.id || item._id || `${item.type}-${index}`} className="list-group-item">
+                <strong>{item.type || 'Activity'}</strong> — {item.duration || 0} min • {item.distance || 0} km
+              </li>
+            ))
+          )}
+        </ul>
+      )}
     </section>
-  );
+  )
 }
