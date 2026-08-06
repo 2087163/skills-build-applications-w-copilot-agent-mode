@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 
-function getApiUrl(path) {
+function getApiUrl(resource) {
   const codespaceName = import.meta.env.VITE_CODESPACE_NAME?.trim()
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+  const normalizedResource = resource.replace(/^\/+/, '')
 
   if (codespaceName) {
-    return `https://${codespaceName}-8000.app.github.dev/api${normalizedPath}`
+    return `https://${codespaceName}-8000.app.github.dev/api/${normalizedResource}/`
   }
 
-  return `http://localhost:8000/api${normalizedPath}`
+  return `http://localhost:8000/api/${normalizedResource}/`
 }
 
 function normalizeItems(payload) {
@@ -34,7 +34,7 @@ function normalizeItems(payload) {
 export default function Users() {
   const [items, setItems] = useState([])
   const [error, setError] = useState('')
-  const apiUrl = useMemo(() => getApiUrl('/users'), [])
+  const apiUrl = useMemo(() => getApiUrl('users'), [])
 
   useEffect(() => {
     let isMounted = true
