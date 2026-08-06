@@ -1,7 +1,8 @@
+import mongoose from 'mongoose';
 import '../config/database.js';
 import { Activity, Leaderboard, Team, User, Workout } from '../routes/api.js';
 /**
- * Seed the octofit_db database with sample data for OctoFit Tracker.
+ * Seed the octofit_db database with test data
  */
 async function seedDatabase() {
     try {
@@ -111,6 +112,9 @@ async function seedDatabase() {
     catch (error) {
         console.error('Error seeding database:', error);
         process.exit(1);
+    }
+    finally {
+        await mongoose.disconnect();
     }
 }
 seedDatabase();
