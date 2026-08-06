@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import '../config/database.js';
 import { Activity, Leaderboard, Team, User, Workout } from '../routes/api.js';
 
@@ -119,6 +120,8 @@ async function seedDatabase() {
   } catch (error) {
     console.error('Error seeding database:', error);
     process.exit(1);
+  } finally {
+    await mongoose.disconnect();
   }
 }
 
