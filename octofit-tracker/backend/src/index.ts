@@ -3,7 +3,8 @@ import './config/database.js';
 import apiRoutes from './routes/api.js';
 
 const app = express();
-const port = Number(process.env.PORT || 8000);
+const backendPort = 8000;
+const port = Number(process.env.PORT || backendPort);
 const codespaceName = process.env.CODESPACE_NAME;
 const baseUrl = codespaceName
   ? `https://${codespaceName}-8000.app.github.dev`
